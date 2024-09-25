@@ -1,0 +1,51 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "paperpile",
+  "title": "Paperpile",
+  "description": "Search Paperpile bibliography",
+  "icon": "paperpile.png",
+  "author": "shikibu9419",
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "index",
+      "title": "Search Paperpile",
+      "description": "Search my bibliography",
+      "mode": "view",
+      "preferences": [
+        {
+          "title": "BibTeX Path",
+          "name": "bibtexPath",
+          "description": "paperpile.bib location",
+          "type": "file",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.46.0",
+    "bibtex-parse": "^2.1.0",
+    "fuzzy-search": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/fuzzy-search": "^2.1.5",
+    "@types/glob": "^8.0.1",
+    "@types/node": "18.8.3",
+    "@types/react": "18.0.9",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "prettier": "^2.5.1",
+    "typescript": "^4.4.3"
+  },
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "node": "node",
+    "publish": "ray publish"
+  }
+}
