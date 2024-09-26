@@ -1,27 +1,27 @@
 import { setValueToInput } from "../utils";
 
 function processQueryParams() {
-  console.log(new URLSearchParams(window.location.search));
   // 現在のURLからクエリストリングを取得
-  const urlParams = new URLSearchParams(window.location.search);
-
-  let query = "";
-  let doi = "";
-
-  urlParams.forEach((value, key) => {
-    if (key === "q") {
-      query = value;
-    } else if (key === "doi") {
-      doi = value;
-    }
+  const params: { [key: string]: string | undefined } = {};
+  new URLSearchParams(window.location.search).forEach((value: string, key: string) => {
+    params[key] = value;
   });
 
-  // クエリストリングをコンソールに出
-  if (query) {
+  const { q, title, author, year, abstract, pdf, doi } = params;
+
+  let searchQuery = q || "";
+
+  if (title) searchQuery += ` title:${title}`;
+  if (author) searchQuery += ` author:${author}`;
+  if (year) searchQuery += ` year:${year}`;
+  if (abstract) searchQuery += ` abstract:${abstract}`;
+  if (pdf) searchQuery += ` pdf:${pdf}`;
+
+  if (searchQuery) {
     const searchForm = document.querySelector(
       'input[placeholder="Search library"]'
     ) as HTMLInputElement;
-    if (searchForm) setValueToInput(searchForm, query);
+    if (searchForm) setValueToInput(searchForm, searchQuery);
   }
 }
 

@@ -38,3 +38,7 @@ export async function waitQuerySelector(
   return obj;
 }
 
+export const querySelectorAllArray = <T extends Element>(
+  selector: string,
+  parent: ParentNode = document
+): T[] => Array.from(parent.querySelectorAll(selector)) as T[];
