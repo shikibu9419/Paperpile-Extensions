@@ -136,3 +136,33 @@ document.addEventListener("copy", async (event: ClipboardEvent) => {
   const copiedText = (await navigator.clipboard.readText()).replace("\n", " ");
   navigator.clipboard.writeText(copiedText);
 });
+
+let disableScroll = false;
+
+// クリックイベントの監視
+document.addEventListener("mousedown", () => {
+  disableScroll = true;
+
+  // Nミリ秒後にスクロールを再度有効にする
+  setTimeout(() => {
+    disableScroll = false;
+  }, 300);
+});
+
+let previousScrollTop = 0;
+let scrollPanel: Element | null = null;
+// スクロール関連のイベントをキャンセルする関数
+function preventScroll(event: Event) {
+  if (disableScroll && scrollPanel) {
+    scrollPanel.scrollTop = previousScrollTop;
+  } else {
+    previousScrollTop = scrollPanel?.scrollTop || 0;
+  }
+}
+
+waitQuerySelector("#mp-center-panel")?.then((centerPanel) => {
+  scrollPanel = centerPanel;
+  previousScrollTop = centerPanel.scrollTop;
+  centerPanel.addEventListener("scroll", preventScroll);
+});
+
