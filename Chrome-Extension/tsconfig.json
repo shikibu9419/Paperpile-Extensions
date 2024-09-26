@@ -4,6 +4,7 @@
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
     "moduleResolution": "Node",
+    "typeRoots": ["@types", "vite/client"],
     "strict": true
   },
   "include": ["scripts/"]
