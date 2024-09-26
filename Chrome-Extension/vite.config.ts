@@ -1,10 +1,23 @@
-import { defineConfig } from "vite";
+import { defineConfig, PluginOption } from "vite";
 import { crx, defineManifest } from "@crxjs/vite-plugin";
+
+const viteManifestHackIssue846: PluginOption & {
+  renderCrxManifest: (manifest: any, bundle: any) => void;
+} = {
+  // Workaround from https://github.com/crxjs/chrome-extension-tools/issues/846#issuecomment-1861880919.
+  name: "manifestHackIssue846",
+  renderCrxManifest(_manifest, bundle) {
+    bundle["manifest.json"] = bundle[".vite/manifest.json"];
+    bundle["manifest.json"].fileName = "manifest.json";
+    delete bundle[".vite/manifest.json"];
+  },
+};
 
 const manifest = defineManifest({
   manifest_version: 3,
-  name: "Reading time",
-  description: "Add the reading time to Chrome Extension documentation articles",
+  author: "shikibu9419",
+  name: "Paperpile Enhancements",
+  description: "Enhancements for Paperpile",
   version: "1.0",
   permissions: ["activeTab", "scripting"],
   //   icons: {
@@ -25,13 +38,13 @@ const manifest = defineManifest({
       matches: ["https://app.paperpile.com/my-library/*"],
     },
     {
-      js: ["scripts/pdf_viewer.ts"],
-      run_at: "document_end",
+      js: ["scripts/pdf_viewer/document_idle.ts"],
+      run_at: "document_idle",
       matches: ["https://app.paperpile.com/view/*"],
     },
   ],
 });
 
 export default defineConfig({
-  plugins: [crx({ manifest })],
+  plugins: [viteManifestHackIssue846, crx({ manifest })],
 });
