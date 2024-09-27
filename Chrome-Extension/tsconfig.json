@@ -5,7 +5,10 @@
     "lib": ["ESNext", "DOM"],
     "moduleResolution": "Node",
     "typeRoots": ["@types", "vite/client"],
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "strict": true
   },
-  "include": ["scripts/"]
+  "include": ["src"]
 }

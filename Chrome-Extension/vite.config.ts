@@ -28,17 +28,17 @@ const manifest = defineManifest({
   //   },
   content_scripts: [
     {
-      js: ["scripts/top/document_start.ts"],
+      js: ["src/top/document_start.ts"],
       run_at: "document_start",
       matches: ["https://app.paperpile.com/my-library/*"],
     },
     {
-      js: ["scripts/top/document_idle.ts"],
+      js: ["src/top/document_idle.ts"],
       run_at: "document_idle",
       matches: ["https://app.paperpile.com/my-library/*"],
     },
     {
-      js: ["scripts/pdf_viewer/document_idle.ts"],
+      js: ["src/pdf_viewer/document_idle.ts"],
       run_at: "document_idle",
       matches: ["https://app.paperpile.com/view/*"],
     },
@@ -47,4 +47,9 @@ const manifest = defineManifest({
 
 export default defineConfig({
   plugins: [viteManifestHackIssue846, crx({ manifest })],
+  resolve: {
+    alias: {
+      "@": "/src",
+    },
+  },
 });
