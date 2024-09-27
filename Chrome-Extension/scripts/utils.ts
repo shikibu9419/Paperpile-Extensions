@@ -17,7 +17,6 @@ export function setValueToInput(element: ReactInputElement, value: string) {
   element.dispatchEvent(event);
 }
 
-
 export async function waitQuerySelector(
   selector: string,
   node = document,
@@ -29,6 +28,26 @@ export async function waitQuerySelector(
   while (!obj) {
     obj = await new Promise<Element | null>((resolve) =>
       setTimeout(() => resolve(node.querySelector(selector)), interval)
+    );
+    timeout -= interval;
+
+    if (timeout <= 0) throw new Error(`Timeout: ${selector} is not found`);
+  }
+
+  return obj;
+}
+
+export async function waitQuerySelectorAll(
+  selector: string,
+  node = document,
+  interval = 100,
+  timeout = 10000
+): Promise<Element[]> {
+  let obj: Element[] | null = null;
+
+  while (!obj?.length) {
+    obj = await new Promise<Element[] | null>((resolve) =>
+      setTimeout(() => resolve(querySelectorAllArray(selector, node)), interval)
     );
     timeout -= interval;
 

@@ -1,4 +1,65 @@
-import { querySelectorAllArray, waitQuerySelector } from "../utils";
+import { querySelectorAllArray, waitQuerySelector, waitQuerySelectorAll } from "../utils";
+
+const getAllHighlights = () =>
+  querySelectorAllArray(".annotationLayer").reduce(
+    (highlights, layer) => [
+      ...highlights,
+      ...Array.from(layer.children).filter((e) => e.id.startsWith("mp-highlightc")),
+    ],
+    [] as Element[]
+  );
+
+const updateCommentY = (commentId: string) => {
+  const comment = document.getElementById(`commentc${commentId}`);
+  const highlight = document.getElementById(`mp-highlightc${commentId}`)
+    ?.firstChild as HTMLElement | null;
+
+  if (comment && highlight) {
+    comment.style.visibility = "visible";
+
+    if (!comment.style.marginLeft.length) {
+      const offsetX = -parseFloat(comment.style.transform.slice(11, -3));
+      comment.style.marginLeft = `${offsetX}px`;
+    }
+
+    if (!comment.style.marginTop.length) {
+      const offsetY = comment.getBoundingClientRect().top - highlight.getBoundingClientRect().top;
+      comment.style.marginTop = `-${offsetY}px`;
+    }
+  }
+};
+
+const getCommentId = (e: Element) => e.id.slice(8);
+const getHighlightId = (e: Element) => e.id.slice(13);
+
+const observer = new MutationObserver((mutationsList) => {
+  mutationsList.forEach((mutation) => {
+    if (mutation.type === "childList") {
+      mutation.removedNodes.forEach((node) => {
+        if (node instanceof HTMLElement && twoColumns && node.matches(".annotationLayer")) {
+          const shownHightlightIds = getAllHighlights().map(getHighlightId);
+
+          for (const comment of querySelectorAllArray(".mp-comment-container")) {
+            if (!shownHightlightIds.includes(getCommentId(comment))) {
+              (comment as HTMLElement).style.visibility = "hidden";
+            }
+          }
+        }
+      });
+
+      mutation.addedNodes.forEach((node) => {
+        if (node instanceof HTMLElement && twoColumns && node.matches(".annotationLayer")) {
+          for (const annotation of Array.from(node.children)) {
+            const annotationId = annotation.id;
+            if (!annotationId.startsWith("mp-highlightc")) continue;
+
+            updateCommentY(getHighlightId(annotation));
+          }
+        }
+      });
+    }
+  });
+});
 
 const TWO_COLUMNS_KEY = "PAPERPILE_EXTENSIONS__TWO_COLUMNS";
 let twoColumns = localStorage.getItem(TWO_COLUMNS_KEY) === "true";
@@ -11,42 +72,13 @@ const makeViewerSingleColumn = () => {
     });
   }
 
-  const comments = Array.from(
-    document.getElementById("mp-comments-list")?.children || []
-  ) as HTMLElement[];
-  comments.forEach((c, index) => {
-    c.style.marginLeft = "0";
-    c.style.marginTop = "0";
-  });
+  for (const comment of querySelectorAllArray(".mp-comment-container")) {
+    (comment as HTMLElement).style.marginLeft = "";
+    (comment as HTMLElement).style.marginTop = "";
+  }
 };
 
 const makeViewerTwoColumns = () => {
-  const pageRects = Array.from(document.querySelectorAll("#mp-viewer .page") || []).map((c) =>
-    c.getBoundingClientRect()
-  );
-  const comments = Array.from(
-    document.getElementById("mp-comments-list")?.children || []
-  ) as HTMLElement[];
-  const commentPageNumbers = comments.map(
-    (c) =>
-      pageRects.findIndex(
-        (p) => p.top <= c.getBoundingClientRect().top && c.getBoundingClientRect().top <= p.bottom
-      ) + 1
-  );
-  // const commentPageGroups = commentPageNumbers.map((n) => Math.ceil(n / 2))
-
-  const pageSize = pageRects[0];
-  const commentOffsets = comments.map((c, index) => {
-    const pageNumber = commentPageNumbers[index];
-    const y = -pageSize.height * Math.floor(pageNumber / 2);
-    let x = 0;
-    if (pageNumber % 2 === 0) {
-      x = -pageSize.width;
-    }
-
-    return { x, y };
-  });
-
   const centerPanel = document.getElementById("mp-center-panel");
   if (centerPanel) {
     centerPanel.style.marginLeft = "0";
@@ -60,12 +92,7 @@ const makeViewerTwoColumns = () => {
     });
   }
 
-  comments.forEach((c, index) => {
-    const marginLeft = -parseFloat(c.style.transform.slice(11, -3));
-    const marginTop = commentOffsets[index].y;
-    c.style.marginLeft = `${marginLeft}px`;
-    c.style.marginTop = `${marginTop}px`;
-  });
+  getAllHighlights().map(getHighlightId).forEach(updateCommentY);
 };
 
 // 設定リスト項目要素のチェック表示を更新
@@ -126,7 +153,14 @@ const addTwoColumnsButton = async () => {
   twoColumnItem.addEventListener("click", toggleViewerColumns);
   updateCheckmark(twoColumnItem);
 
-  if (twoColumns && (await waitQuerySelector("#mp-viewer > .spread"))) makeViewerTwoColumns();
+  const spreads = await waitQuerySelectorAll("#mp-viewer > .spread");
+  for (const spread of spreads) {
+    for (const page of Array.from(spread.children)) {
+      observer.observe(page, { childList: true });
+    }
+  }
+
+  if (twoColumns) makeViewerTwoColumns();
 };
 
 addTwoColumnsButton();
@@ -165,4 +199,3 @@ waitQuerySelector("#mp-center-panel")?.then((centerPanel) => {
   previousScrollTop = centerPanel.scrollTop;
   centerPanel.addEventListener("scroll", preventScroll);
 });
-
