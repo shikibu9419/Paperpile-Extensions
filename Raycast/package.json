@@ -25,6 +25,7 @@
   ],
   "dependencies": {
     "@raycast/api": "^1.46.0",
+    "@raycast/utils": "^1.17.0",
     "bibtex-parse": "^2.1.0",
     "fuzzy-search": "^3.2.1"
   },
